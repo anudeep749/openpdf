@@ -1,0 +1,10 @@
+
+h	java:S112­"FDefine and throw a dedicated exception instead of using a generic one.(ä…ğ€ÿÿÿÿÿ8ÒùèÌÓ1
+j
+java:S2259N"HA "NullPointerException" could be thrown; "internship" is nullable here.(µáÎüÿÿÿÿ8½üèÌÓ1
+c
+java:S2095"FUse try-with-resources or close this "Document" in a "finally" clause.(‚…ìÜ8¾üèÌÓ1
+_
+java:S6813"BRemove this field injection and use constructor injection instead.(¦“²Ï8ÂüèÌÓ1
+L	java:S106 "+Replace this use of System.out by a logger.(æÀö€øÿÿÿÿ8ØüèÌÓ1
+]	java:S125J"<This block of commented-out lines of code should be removed.(µáÎüÿÿÿÿ8öüèÌÓ1
