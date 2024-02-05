@@ -29,7 +29,7 @@ public class PdfController {
     HttpServletResponse response;
     @GetMapping("/generates/{id}")
     public ResponseEntity<byte[]> generatePdff(@PathVariable int id) throws Exception {
-        byte[] pdfContent = openPDFServiceImpl.generatesPdf(id);
+        byte[] pdfContent = openPDFServiceImpl.generatePdf(id);
 
         if (pdfContent != null) {
             HttpHeaders headers = new HttpHeaders();
@@ -47,7 +47,7 @@ public class PdfController {
 
     @GetMapping("/generate/{id}")
     public ResponseEntity<byte[]> generatePdf(@PathVariable int id) throws IOException {
-        byte[] pdfContent = openPDFServiceImpl.generatePdf(id);
+        byte[] pdfContent = openPDFServiceImpl.generateAndSavePdf(id);
         if (pdfContent != null) {
 
             response.setContentType("application/pdf");

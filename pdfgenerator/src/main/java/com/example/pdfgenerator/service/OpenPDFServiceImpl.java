@@ -9,11 +9,12 @@ import com.lowagie.text.pdf.PdfWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
-
 import java.io.ByteArrayOutputStream;
-import java.io.FileOutputStream;
+
+import java.io.IOException;
 import java.util.Optional;
 
+import static com.lowagie.text.pdf.PdfWriter.ALLOW_PRINTING;
 import static java.awt.Color.BLACK;
 
 @Service
@@ -23,30 +24,54 @@ public class OpenPDFServiceImpl implements OpenPDFService {
     private InternshipRepository internshipRepository;
 
     public byte[] generatePdf(Integer id) {
-
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             Document document = new Document();
-            PdfWriter.getInstance(document, baos);
+            PdfWriter writer = PdfWriter.getInstance(document, baos);
+
             document.open();
-            addContent(document,id);
-            document.close();
-            return baos.toByteArray();
-        } catch (DocumentException | java.io.IOException e) {
+            document.add(new Chunk(""));
+
+            addContent(document, id);
+
+            if (writer.getPageNumber() > 0) {
+                document.close();
+                writer.flush();
+
+
+                return baos.toByteArray();
+            } else {
+                System.err.println("The document has no pages. No PDF will be generated.");
+                return null;
+            }
+        } catch (DocumentException | IOException e) {
             e.printStackTrace();
             return null;
         }
     }
+    public  byte[] generateAndSavePdf(Integer id) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            Document document = new Document();
+            PdfWriter writer = PdfWriter.getInstance(document, baos);
+            writer.setEncryption(null, null, ALLOW_PRINTING, PdfWriter.STANDARD_ENCRYPTION_128);
 
-    public byte[] generatesPdf(Integer id) throws Exception {
-        // Logic to generate PDF using iText
-        // Example:
-        Document document = new Document();
-        PdfWriter.getInstance(document, new FileOutputStream("output.pdf"));
-        document.open();
-        addContent(document,id);
-        document.close();
+            document.open();
+            addContent(document, id);
+
+
+            if (writer.getPageNumber() > 0) {
+                document.close();
+                writer.flush();
+                System.out.println("PDF generated with printing permission.");
+                return baos.toByteArray();
+            } else {
+                System.err.println("The document has no pages. No PDF will be generated.");
+            }
+        } catch (DocumentException | IOException e) {
+            e.printStackTrace();
+        }
         return new byte[0];
     }
+
     private void addContent(Document document,Integer id) {
         try {
             Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16, BLACK);
@@ -77,14 +102,13 @@ public class OpenPDFServiceImpl implements OpenPDFService {
             document.add(new Paragraph("E-Mail: hr@sscreativelabs.com"));
             Internship internship = internshipRepository.findById(id).orElse(null);
 
-            // Add space
             addEmptyLine(document, 2);
 
 //            document.add(new Paragraph(internship.getOfferLetterReleasingDate()));
 
             addEmptyLine(document, 1);
 
-            document.add(new Paragraph("Mr." + internship.getName()));
+            document.add(new Paragraph("Mr.Avinash" ));
 
             document.add(new Paragraph(internship.getTown()));
             document.add(new Paragraph(internship.getDistrict()));
