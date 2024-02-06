@@ -7,8 +7,8 @@ import com.itextpdf.text.log.Logger;
 import com.itextpdf.text.log.LoggerFactory;
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.PdfWriter;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
@@ -102,12 +102,12 @@ public class OpenPDFServiceImpl implements OpenPDFService {
 
             document.add(new Paragraph("PLOT NO 45,46\nCENTRAL PARK, PHASE-1, KONDAPUR\nRANGAREDDY, TELANGANA - 500084"));
 
-            final var logoPath = new ClassPathResource("images/logo9.jpg");
+            final var logoPath = new ClassPathResource("images/logo9.jpg").getInputStream();
             float scalePercentage = 50; // You can adjust this percentage
             float targetWidth = 200f; // Set the desired width
             float targetHeight = 100f; // Set the desired height
 
-            final var logo = Image.getInstance(logoPath.getFile().toString());
+            final var logo = Image.getInstance(IOUtils.toByteArray(logoPath));
             logo.scalePercent(scalePercentage);
             logo.scaleAbsolute(targetWidth, targetHeight);
 
