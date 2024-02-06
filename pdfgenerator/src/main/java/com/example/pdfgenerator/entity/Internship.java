@@ -14,7 +14,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Data
-@Table(name = "Employees_Table")
+@Table(name = "Offer_Letter")
 public class Internship {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

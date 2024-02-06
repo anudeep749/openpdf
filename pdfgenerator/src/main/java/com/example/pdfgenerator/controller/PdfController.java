@@ -13,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 
 
 @RestController
@@ -44,21 +43,24 @@ public class PdfController {
             return ResponseEntity.badRequest().body("Error generating PDF".getBytes());
         }
     }
-
     @GetMapping("/generate/{id}")
-    public ResponseEntity<byte[]> generatePdf(@PathVariable int id) throws IOException {
-        byte[] pdfContent = openPDFServiceImpl.generateAndSavePdf(id);
-        if (pdfContent != null) {
+    public ResponseEntity<byte[]> generatePdf(@PathVariable int id) throws Exception {
+        byte[] pdfContent = openPDFServiceImpl.generatesPdf(id);
 
-            response.setContentType("application/pdf");
-            response.setHeader("Content-Disposition", "attachment; filename=generated.pdf");
-            response.getOutputStream().write(pdfContent);
-            response.getOutputStream().flush();
+        if (pdfContent != null) {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("attachment", "generated_pdf_" + id + ".pdf");
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .contentLength(pdfContent.length)
+                    .body(pdfContent);
         } else {
             return ResponseEntity.badRequest().body("Error generating PDF".getBytes());
         }
-        return null;
     }
+
 
     @PostMapping("/send")
     public Internship sendDetails (@RequestBody Internship internship){

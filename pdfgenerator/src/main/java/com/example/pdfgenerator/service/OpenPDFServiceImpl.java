@@ -3,23 +3,31 @@ package com.example.pdfgenerator.service;
 
 import com.example.pdfgenerator.entity.Internship;
 import com.example.pdfgenerator.repo.InternshipRepository;
+import com.itextpdf.text.log.Logger;
+import com.itextpdf.text.log.LoggerFactory;
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.PdfWriter;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import java.io.ByteArrayOutputStream;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Optional;
+import java.util.Properties;
 
-import static com.lowagie.text.pdf.PdfWriter.ALLOW_PRINTING;
 import static java.awt.Color.BLACK;
 
 @Service
 public class OpenPDFServiceImpl implements OpenPDFService {
-
+//    @Value("${output.directory}")
+//    private String outputDirectory;
+    private static final Logger logger = LoggerFactory.getLogger(OpenPDFServiceImpl.class);
+    private static final Properties properties = loadProperties();
+    private static final String OUTPUT_DIRECTORY  = properties.getProperty("output.directory");
     @Autowired
     private InternshipRepository internshipRepository;
 
@@ -29,15 +37,11 @@ public class OpenPDFServiceImpl implements OpenPDFService {
             PdfWriter writer = PdfWriter.getInstance(document, baos);
 
             document.open();
-            document.add(new Chunk(""));
-
             addContent(document, id);
 
             if (writer.getPageNumber() > 0) {
                 document.close();
                 writer.flush();
-
-
                 return baos.toByteArray();
             } else {
                 System.err.println("The document has no pages. No PDF will be generated.");
@@ -48,36 +52,55 @@ public class OpenPDFServiceImpl implements OpenPDFService {
             return null;
         }
     }
-    public  byte[] generateAndSavePdf(Integer id) {
+
+    private static Properties loadProperties() {
+        Properties props = new Properties();
+        try (InputStream input = OpenPDFServiceImpl.class.getClassLoader().getResourceAsStream("application.properties")) {
+            if (input != null) {
+                props.load(input);
+            }
+        } catch (IOException e) {
+            logger.error("Error loading configuration properties", e);
+        }
+        return props;
+    }
+
+
+
+    public byte[] generatesPdf(Integer id) {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             Document document = new Document();
-            PdfWriter writer = PdfWriter.getInstance(document, baos);
-            writer.setEncryption(null, null, ALLOW_PRINTING, PdfWriter.STANDARD_ENCRYPTION_128);
+            String absoluteFilePath = OUTPUT_DIRECTORY + "generated_pdf_" + id + ".pdf";
 
+            PdfWriter writer = PdfWriter.getInstance(document, baos);
             document.open();
             addContent(document, id);
-
-
-            if (writer.getPageNumber() > 0) {
-                document.close();
-                writer.flush();
-                System.out.println("PDF generated with printing permission.");
-                return baos.toByteArray();
-            } else {
-                System.err.println("The document has no pages. No PDF will be generated.");
-            }
+            document.close();
+            writeToFile(baos.toByteArray(), absoluteFilePath);
+            return baos.toByteArray();
         } catch (DocumentException | IOException e) {
-            e.printStackTrace();
+            logger.error("Error during PDF generation", e);
+            return null;
         }
-        return new byte[0];
     }
+
+    private void writeToFile(byte[] data, String filePath) {
+        try (FileOutputStream fos = new FileOutputStream(filePath)) {
+            fos.write(data);
+            logger.info("PDF generated successfully at: " + filePath);
+        } catch (IOException e) {
+            logger.error("Error writing PDF to file", e);
+        }
+    }
+
+
 
     private void addContent(Document document,Integer id) {
         try {
             Font boldFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16, BLACK);
             Font boldFonts = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10, BLACK);
 
-
+            document.add(new Paragraph("PLOT NO 45,46\nCENTRAL PARK, PHASE-1, KONDAPUR\nRANGAREDDY, TELANGANA - 500084"));
 
             final var logoPath = new ClassPathResource("images/logo9.jpg");
             float scalePercentage = 50; // You can adjust this percentage
@@ -108,7 +131,7 @@ public class OpenPDFServiceImpl implements OpenPDFService {
 
             addEmptyLine(document, 1);
 
-            document.add(new Paragraph("Mr.Avinash" ));
+            document.add(new Paragraph("Mr."+internship.getName() ));
 
             document.add(new Paragraph(internship.getTown()));
             document.add(new Paragraph(internship.getDistrict()));
@@ -126,7 +149,7 @@ public class OpenPDFServiceImpl implements OpenPDFService {
             addEmptyLine(document, 1);
 
             document.add(new Paragraph("We are delighted to offer you an internship position as a"+" " + getById(id).getInternPosition() + " " + "at Sunshine"));
-            document.add(new Paragraph("Creative Labs, commencing on" + " " + getById(id).getOfferLetterReleasingDate() +""+ "We believe your skills and enthusiasm will"));
+            document.add(new Paragraph("Creative Labs, commencing on" + " " + getById(id).getOfferLetterReleasingDate() +" ."+ "We believe your skills and enthusiasm will"));
             document.add(new Paragraph("be valuable additions to our team."));
             addEmptyLine(document, 1);
 
@@ -153,10 +176,9 @@ public class OpenPDFServiceImpl implements OpenPDFService {
                 document.add(new Paragraph("development environment."));
 
             } else if ("AWS DevOps Engineer".equals(internship.getInternPosition())) {
-                document.add(new Paragraph("Streamline processes and improve system reliability. Assist in designing,implementing,"));
-                document.add(new Paragraph("and maintaining automation tools. Support the team in deploying,managing,and monitoring"));
-                document.add(new Paragraph("cloud-based applications. Participate in troubleshooting and resolving infrastructure "));
-                document.add(new Paragraph("issues."));
+                document.add(new Paragraph("Streamline processes and improve system reliability by Assisting in designing,implementing,"));
+                document.add(new Paragraph("and maintaining automation tools.Support the team in deploying,managing,and monitoring"));
+                document.add(new Paragraph("cloud-based applications.Participate in troubleshooting and resolving infrastructure issues."));
 
             } else if ("Software Tester".equals(internship.getInternPosition())) {
 
